@@ -5,7 +5,7 @@ t_log* logger;
 int iniciar_servidor(void)
 {
 	// Quitar esta línea cuando hayamos terminado de implementar la funcion
-	assert(!"no implementado!");
+	// assert(!"no implementado!");
 
 	int socket_servidor;
 
@@ -16,13 +16,27 @@ int iniciar_servidor(void)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	getaddrinfo(NULL, PUERTO, &hints, &servinfo);
+	int sererr = getaddrinfo(NULL, PUERTO, &hints, &servinfo);
+
+	if (sererr == -1){
+		error_show("No se pudo obtener información del servidor");
+		abort();
+	}
 
 	// Creamos el socket de escucha del servidor
 
+	socket_servidor = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+
+	// Usamos setsockopt para poder aceptar varias conexiones al mismo puerto al bajar y levantar de nuevo el server
+	int optval = 1;
+	int err = setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(int));
+
 	// Asociamos el socket a un puerto
+	err = bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
 
 	// Escuchamos las conexiones entrantes
+	// EL segundo parámetro son la cantidad de conexiones que puede mantener.
+	err = listen(socket_servidor, SOMAXCONN);
 
 	freeaddrinfo(servinfo);
 	log_trace(logger, "Listo para escuchar a mi cliente");
@@ -33,10 +47,12 @@ int iniciar_servidor(void)
 int esperar_cliente(int socket_servidor)
 {
 	// Quitar esta línea cuando hayamos terminado de implementar la funcion
-	assert(!"no implementado!");
+	// assert(!"no implementado!");
 
 	// Aceptamos un nuevo cliente
 	int socket_cliente;
+
+	socket_cliente = accept(socket_servidor, NULL, NULL);
 	log_info(logger, "Se conecto un cliente!");
 
 	return socket_cliente;

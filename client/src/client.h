@@ -12,7 +12,9 @@
 
 
 t_log* iniciar_logger(void);
+void comprobar_logger(t_log*);
 t_config* iniciar_config(void);
+void comprobar_config(t_config*);
 void leer_consola(t_log*);
 void paquete(int);
 void terminar_programa(int, t_log*, t_config*);
