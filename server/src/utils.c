@@ -52,10 +52,46 @@ int esperar_cliente(int socket_servidor)
 	// Aceptamos un nuevo cliente
 	int socket_cliente;
 
+	
 	socket_cliente = accept(socket_servidor, NULL, NULL);
-	log_info(logger, "Se conecto un cliente!");
+
 
 	return socket_cliente;
+}
+
+void * atender_cliente(void* fd_conexion_ptr){
+	log_info(logger, "Soy un cliente que habla desde un thread!\n");
+
+	int cliente_fd = *(int*)fd_conexion_ptr;
+	free(fd_conexion_ptr);
+
+	t_list* lista;
+
+	while (1) {
+		int cod_op = recibir_operacion(cliente_fd);
+		switch (cod_op) {
+		case MENSAJE:
+			recibir_mensaje(cliente_fd);
+			break;
+		case PAQUETE:
+			lista = recibir_paquete(cliente_fd);
+			log_info(logger, "Me llegaron los siguientes valores:\n");
+			list_iterate(lista, (void*) iterator);
+			list_destroy_and_destroy_elements(lista, free); // ¡Importante!
+			break;
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			close(cliente_fd);
+			return NULL;
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			break;
+		}
+	}
+}
+
+void iterator(char* value) {
+	log_info(logger,"%s", value);
 }
 
 int recibir_operacion(int socket_cliente)

@@ -26,8 +26,11 @@ void* recibir_buffer(int*, int);
 
 int iniciar_servidor(void);
 int esperar_cliente(int);
+void * atender_cliente(void*);
 t_list* recibir_paquete(int);
 void recibir_mensaje(int);
 int recibir_operacion(int);
+void iterator(char* value);
+
 
 #endif /* UTILS_H_ */

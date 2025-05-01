@@ -5,31 +5,20 @@ int main(void) {
 
 	int server_fd = iniciar_servidor();
 	log_info(logger, "Servidor listo para recibir al cliente");
-	int cliente_fd = esperar_cliente(server_fd);
 
-	t_list* lista;
 	while (1) {
-		int cod_op = recibir_operacion(cliente_fd);
-		switch (cod_op) {
-		case MENSAJE:
-			recibir_mensaje(cliente_fd);
-			break;
-		case PAQUETE:
-			lista = recibir_paquete(cliente_fd);
-			log_info(logger, "Me llegaron los siguientes valores:\n");
-			list_iterate(lista, (void*) iterator);
-			break;
-		case -1:
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
-			return EXIT_FAILURE;
-		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-			break;
-		}
+     pthread_t thread;
+     int *fd_conexion_ptr = malloc(sizeof(int));
+     *fd_conexion_ptr = accept(server_fd, NULL, NULL);
+		 log_info(logger, "Se conecto un cliente!\n");
+     pthread_create(&thread,
+                    NULL,
+                    (void*) atender_cliente,
+                    fd_conexion_ptr);
+     pthread_detach(thread);
 	}
+
 	return EXIT_SUCCESS;
 }
 
-void iterator(char* value) {
-	log_info(logger,"%s", value);
-}
+
